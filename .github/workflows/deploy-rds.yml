@@ -1,0 +1,69 @@
+name: Deploy RDS Infrastructure (Terraform)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  terraform-rds:
+    name: Provisionar Banco de Dados RDS (Terraform)
+    runs-on: ubuntu-latest
+    environment: AWS_ACADEMY
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Garantir Bucket S3 do Terraform State
+        run: |
+          aws s3api head-bucket --bucket "ofisy-tfstate-${{ secrets.AWS_ACCOUNT_ID }}" 2>/dev/null || \
+          aws s3api create-bucket --bucket "ofisy-tfstate-${{ secrets.AWS_ACCOUNT_ID }}" --region us-east-1 || echo "Bucket já existente ou criado."
+
+      - name: Configurar Arquivos de Variáveis
+        run: |
+          cd infra
+          echo 'account_id = "${{ secrets.AWS_ACCOUNT_ID }}"' > terraform.tfvars
+          echo 'db_password = "${{ secrets.DB_PASSWORD }}"' >> terraform.tfvars
+          
+          echo 'bucket = "ofisy-tfstate-${{ secrets.AWS_ACCOUNT_ID }}"' > backend.hcl
+          echo 'key    = "rds/terraform.tfstate"' >> backend.hcl
+          echo 'region = "us-east-1"' >> backend.hcl
+
+      - name: Terraform Init
+        run: |
+          cd infra
+          terraform init -backend-config=backend.hcl
+
+      - name: Terraform Plan
+        run: |
+          cd infra
+          terraform plan -no-color > plan.txt
+          cat plan.txt
+          echo "### Planejamento de Infraestrutura do RDS" >> $GITHUB_STEP_SUMMARY
+          echo '```terraform' >> $GITHUB_STEP_SUMMARY
+          cat plan.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Apply (Executado na Main/Master ou disparo manual)
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+        run: |
+          cd infra
+          terraform apply -auto-approve
+          
+          RDS_ENDPOINT=$(terraform output -raw rds_address)
+          echo "### RDS Provisionado com Sucesso" >> $GITHUB_STEP_SUMMARY
+          echo "- Endpoint: $RDS_ENDPOINT" >> $GITHUB_STEP_SUMMARY
