@@ -29,6 +29,11 @@ jobs:
         with:
           terraform_wrapper: false
 
+      - name: Garantir Bucket S3 do Terraform State
+        run: |
+          aws s3api head-bucket --bucket "ofisy-tfstate-${{ secrets.AWS_ACCOUNT_ID }}" 2>/dev/null || \
+          aws s3api create-bucket --bucket "ofisy-tfstate-${{ secrets.AWS_ACCOUNT_ID }}" --region us-east-1 || echo "Bucket já existente ou criado."
+
       - name: Configurar Arquivos de Variáveis
         run: |
           cd infra
