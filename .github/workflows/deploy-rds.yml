@@ -1,9 +1,8 @@
 name: Deploy RDS Infrastructure (Terraform)
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ main, master ]
-  pull_request:
     branches: [ main, master ]
 
 jobs:
@@ -59,8 +58,8 @@ jobs:
           cat plan.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
-      - name: Terraform Apply (Apenas na Main/Master)
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      - name: Terraform Apply (Executado na Main/Master ou disparo manual)
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
         run: |
           cd infra
           terraform apply -auto-approve
