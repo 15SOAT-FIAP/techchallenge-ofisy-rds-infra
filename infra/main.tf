@@ -13,7 +13,7 @@ terraform {
 ########################################
 
 locals {
-  project_name = "ofisy"
+  project_name = "techchallenge-ofisy"
   aws_region   = "us-east-1"
 }
 
