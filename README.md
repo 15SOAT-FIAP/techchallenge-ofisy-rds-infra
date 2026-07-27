@@ -120,6 +120,5 @@ A pipeline é executada automaticamente em qualquer `push` ou `pull_request` nas
 ## 🔗 Repositórios Relacionados & Documentação
 
 * 🟢 **Aplicação Principal (Kubernetes):** [techchallenge-ofisy](https://github.com/15SOAT-FIAP/techchallenge-ofisy)
-* 🔐 **Lambda Serverless Auth:** [techchallenge-ofisy-auth-lambda](https://github.com/15SOAT-FIAP/techchallenge-ofisy-auth-lambda)
 * ☁️ **Infraestrutura Kubernetes (EKS):** [techchallenge-ofisy-eks-infra](https://github.com/15SOAT-FIAP/techchallenge-ofisy-eks-infra)
 * 📖 **Documentação Swagger/Postman:** Disponível no endpoint da Aplicação Principal (`/swagger-ui/index.html`).
