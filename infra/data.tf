@@ -47,3 +47,9 @@ data "aws_security_group" "eks" {
     values = ["${local.project_name}-eks-sg"]
   }
 }
+
+# Busca o cluster EKS para permitir tráfego dos nós no RDS
+data "aws_eks_cluster" "main" {
+  name = "${local.project_name}-cluster"
+}
+
