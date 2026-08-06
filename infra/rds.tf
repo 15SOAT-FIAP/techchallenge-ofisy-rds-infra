@@ -18,6 +18,7 @@ resource "aws_db_subnet_group" "main" {
 
 # Instância Amazon RDS PostgreSQL gerenciada
 resource "aws_db_instance" "main" {
+  identifier             = "${local.project_name}-postgres-db"
   allocated_storage      = 20
   storage_type           = "gp2"
   engine                 = "postgres"
