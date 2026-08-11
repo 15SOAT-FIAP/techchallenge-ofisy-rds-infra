@@ -54,14 +54,38 @@ graph TD
             end
 
             subgraph SecurityGroups ["Segurança de Rede"]
-                RDSSG["Security Group: ofisy-rds-sg<br/>Inbound: Porta 5432 apenas de ofisy-eks-sg"]
+                RDSSG["Security Group: ofisy-rds-sg<br/>Inbound: Porta 5432 apenas dos SGs autorizados"]
             end
         end
 
         EKSSG["EKS Cluster Security Group<br/>(ofisy-eks-sg)"] -->|Porta 5432| RDSSG
+        LambdaSG["Lambda de Autenticacao<br/>(ofisy-lambda-auth-sg)"] -->|Porta 5432| RDSSG
         RDSSG --> RDSInstance
     end
 ```
+
+Os dois Security Groups de origem são criados pela [infraestrutura base](https://github.com/15SOAT-FIAP/techchallenge-ofisy-eks-infra) e localizados aqui por tag. O SG da Lambda é criado lá, e não junto da função, para que esta regra de liberação não dependa do state da Lambda, que por sua vez depende deste banco.
+
+---
+
+## Ordem de Execução entre os Repositórios
+
+Este repositório é a **etapa 3** de um fluxo de cinco. Ele não cria a rede: localiza a VPC, as subnets privadas e os Security Groups por tag, então a infraestrutura base precisa já estar provisionada. Da mesma forma, a Lambda de autenticação só pode ser criada depois que este banco existir.
+
+```mermaid
+flowchart TD
+    P1["1 · eks-infra — infra/<br/>Rede, EKS, ECR e Security Groups"]
+    P2["2 · techchallenge-ofisy-auth<br/>CD publica a imagem da Lambda no ECR"]
+    P3["3 · techchallenge-ofisy-rds-infra<br/>Banco de dados RDS PostgreSQL"]
+    P4["4 · eks-infra — infra-auth/<br/>Lambda de autenticacao"]
+    P5["5 · techchallenge-ofisy<br/>Aplicacao Spring Boot no EKS"]
+
+    P1 --> P2 --> P3 --> P4 --> P5
+```
+
+Se o `terraform plan` falhar aqui com um erro de que nenhum Security Group corresponde ao filtro, é sinal de que a etapa 1 não rodou ou rodou em uma versão anterior, que ainda não criava o `ofisy-lambda-auth-sg`.
+
+Para **destruir**, siga o caminho inverso: a Lambda (etapa 4) precisa ser destruída antes deste banco.
 
 ---
 
@@ -108,7 +132,10 @@ terraform apply -auto-approve
 
 A pipeline é executada automaticamente em qualquer `push` ou `pull_request` nas branches `main`/`master`.
 
-### Secrets Necessárias no GitHub Repository:
+### Secrets Necessárias:
+
+Definidas como **Organization Secrets** na org `15SOAT-FIAP`, compartilhadas entre os repositórios da Fase 3:
+
 * `AWS_ACCESS_KEY_ID`: Chave de acesso AWS.
 * `AWS_SECRET_ACCESS_KEY`: Chave secreta AWS.
 * `AWS_SESSION_TOKEN`: Token de sessão (para AWS Academy / SSO).
