@@ -1,16 +1,16 @@
-# 🗄️ Ofisy - Infraestrutura do Banco de Dados Gerenciado (RDS PostgreSQL)
+# Ofisy - Infraestrutura do Banco de Dados Gerenciado (RDS PostgreSQL)
 
 Este repositório é responsável pelo provisionamento automatizado via **Terraform** da infraestrutura do banco de dados relacional gerenciado **Amazon RDS PostgreSQL** para a plataforma **Ofisy**, conforme os requisitos do **Tech Challenge (Fase 3 - SOAT / FIAP)**.
 
 ---
 
-## 🎯 Propósito do Repositório
+## Propósito do Repositório
 
 Garantir o isolamento, alta disponibilidade, segurança e gerenciamento do ciclo de vida do banco de dados PostgreSQL na AWS. O banco de dados é provisionado em subnets privadas dentro da VPC da aplicação e configurado com regras restritas de acesso via Security Groups.
 
 ---
 
-## 📁 Estrutura do Repositório
+## Estrutura do Repositório
 
 ```
 techchallenge-ofisy-rds-infra/
@@ -32,16 +32,16 @@ techchallenge-ofisy-rds-infra/
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
-* **[Terraform](https://www.terraform.io/)** (>= 1.5.0): Infraestrutura como Código (IaC).
-* **[Amazon RDS (Relational Database Service)](https://aws.amazon.com/rds/)**: Instância gerenciada do PostgreSQL 15.
-* **[Amazon VPC](https://aws.amazon.com/vpc/)**: Subnet Groups e isolamento de rede privada.
-* **[GitHub Actions](https://github.com/features/actions)**: Pipeline automatizada de CI/CD para plan e apply da infraestrutura.
+- **[Terraform](https://www.terraform.io/)** (>= 1.5.0): Infraestrutura como Código (IaC).
+- **[Amazon RDS (Relational Database Service)](https://aws.amazon.com/rds/)**: Instância gerenciada do PostgreSQL 15.
+- **[Amazon VPC](https://aws.amazon.com/vpc/)**: Subnet Groups e isolamento de rede privada.
+- **[GitHub Actions](https://github.com/features/actions)**: Pipeline automatizada de CI/CD para plan e apply da infraestrutura.
 
 ---
 
-## 🏗️ Arquitetura do Banco de Dados
+## Arquitetura do Banco de Dados
 
 ```mermaid
 graph TD
@@ -89,19 +89,23 @@ Para **destruir**, siga o caminho inverso: a Lambda (etapa 4) precisa ser destru
 
 ---
 
-## 🚀 Passos para Execução e Deploy
+## Passos para Execução e Deploy
 
 ### 1. Pré-requisitos Locais
-* **Terraform CLI** (versão 1.5.0 ou superior)
-* **AWS CLI** configurada com credenciais com permissão para gerenciar instâncias RDS e VPC.
+
+- **Terraform CLI** (versão 1.5.0 ou superior)
+- **AWS CLI** configurada com credenciais com permissão para gerenciar instâncias RDS e VPC.
 
 ### 2. Configuração do Backend e Variáveis
+
 Acesse o diretório `infra/`:
+
 ```bash
 cd infra
 ```
 
 Crie o arquivo `infra/backend.hcl` para o Remote State do S3:
+
 ```hcl
 bucket = "ofisy-tfstate-<SEU_AWS_ACCOUNT_ID>"
 key    = "rds/terraform.tfstate"
@@ -109,12 +113,14 @@ region = "us-east-1"
 ```
 
 Crie o arquivo `infra/terraform.tfvars`:
+
 ```hcl
 account_id  = "<SEU_AWS_ACCOUNT_ID>"
 db_password = "<SUA_SENHA_DO_BANCO_RDS>"
 ```
 
 ### 3. Execução dos Comandos Terraform
+
 ```bash
 # Inicializa os provedores e o backend remoto
 terraform init -backend-config=backend.hcl
@@ -128,7 +134,7 @@ terraform apply -auto-approve
 
 ---
 
-## 🔄 Pipeline CI/CD (GitHub Actions)
+## Pipeline CI/CD (GitHub Actions)
 
 A pipeline é executada automaticamente em qualquer `push` ou `pull_request` nas branches `main`/`master`.
 
@@ -136,16 +142,16 @@ A pipeline é executada automaticamente em qualquer `push` ou `pull_request` nas
 
 Definidas como **Organization Secrets** na org `15SOAT-FIAP`, compartilhadas entre os repositórios da Fase 3:
 
-* `AWS_ACCESS_KEY_ID`: Chave de acesso AWS.
-* `AWS_SECRET_ACCESS_KEY`: Chave secreta AWS.
-* `AWS_SESSION_TOKEN`: Token de sessão (para AWS Academy / SSO).
-* `AWS_ACCOUNT_ID`: ID numérico da conta AWS.
-* `DB_PASSWORD`: Senha master do PostgreSQL (mínimo 8 caracteres).
+- `AWS_ACCESS_KEY_ID`: Chave de acesso AWS.
+- `AWS_SECRET_ACCESS_KEY`: Chave secreta AWS.
+- `AWS_SESSION_TOKEN`: Token de sessão (para AWS Academy / SSO).
+- `AWS_ACCOUNT_ID`: ID numérico da conta AWS.
+- `DB_PASSWORD`: Senha master do PostgreSQL (mínimo 8 caracteres).
 
 ---
 
-## 🔗 Repositórios Relacionados & Documentação
+## Repositórios Relacionados & Documentação
 
-* 🟢 **Aplicação Principal (Kubernetes):** [techchallenge-ofisy](https://github.com/15SOAT-FIAP/techchallenge-ofisy)
-* ☁️ **Infraestrutura Kubernetes (EKS):** [techchallenge-ofisy-eks-infra](https://github.com/15SOAT-FIAP/techchallenge-ofisy-eks-infra)
-* 📖 **Documentação Swagger/Postman:** Disponível no endpoint da Aplicação Principal (`/swagger-ui/index.html`).
+- **Aplicação Principal (Kubernetes):** [techchallenge-ofisy](https://github.com/15SOAT-FIAP/techchallenge-ofisy)
+- **Infraestrutura Kubernetes (EKS):** [techchallenge-ofisy-eks-infra](https://github.com/15SOAT-FIAP/techchallenge-ofisy-eks-infra)
+- **Documentação Swagger/Postman:** Disponível no endpoint da Aplicação Principal (`/swagger-ui/index.html`).
