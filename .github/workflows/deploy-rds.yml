@@ -8,13 +8,17 @@ jobs:
     name: Provisionar Banco de Dados RDS (Terraform)
     runs-on: ubuntu-latest
     environment: AWS_ACADEMY
+    
+    concurrency:
+      group: deploy-rds
+      cancel-in-progress: false
 
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configurar Credenciais AWS
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -22,7 +26,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Configurar Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_wrapper: false
 
@@ -32,10 +36,13 @@ jobs:
           aws s3api create-bucket --bucket "ofisy-tfstate-${{ secrets.AWS_ACCOUNT_ID }}" --region us-east-1 || echo "Bucket já existente ou criado."
 
       - name: Configurar Arquivos de Variáveis
+        env:
+          DB_PASS: ${{ secrets.DB_PASSWORD }}
         run: |
+          echo "::add-mask::$DB_PASS"
           cd infra
           echo 'account_id = "${{ secrets.AWS_ACCOUNT_ID }}"' > terraform.tfvars
-          echo 'db_password = "${{ secrets.DB_PASSWORD }}"' >> terraform.tfvars
+          echo "db_password = \"$DB_PASS\"" >> terraform.tfvars
           
           echo 'bucket = "ofisy-tfstate-${{ secrets.AWS_ACCOUNT_ID }}"' > backend.hcl
           echo 'key    = "rds/terraform.tfstate"' >> backend.hcl
